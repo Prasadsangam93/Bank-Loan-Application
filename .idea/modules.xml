@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+<<<<<<< HEAD
+<<<<<<< HEAD
+      <module fileurl="file://$PROJECT_DIR$/.idea/bank-loan.iml" filepath="$PROJECT_DIR$/.idea/bank-loan.iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/.idea/Bank-Loan-Service.iml" filepath="$PROJECT_DIR$/.idea/Bank-Loan-Service.iml" />
+>>>>>>> e1884dea6d8033150516d6e95246f943d06292a3
+=======
+      <module fileurl="file://$PROJECT_DIR$/.idea/Bank-Loan-Service.iml" filepath="$PROJECT_DIR$/.idea/Bank-Loan-Service.iml" />
+>>>>>>> e1884dea6d8033150516d6e95246f943d06292a3
+    </modules>
+  </component>
+</project>
