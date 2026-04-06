@@ -1,0 +1,44 @@
+package com.microservice.exception;
+
+import org.springframework.web.bind.annotation.*;
+import org.springframework.http.*;
+
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import java.util.*;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<String> handleNotFound(AccountNotFoundException ex){
+        return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(DuplicateAccountException.class)
+    public ResponseEntity<String> handleDuplicate(DuplicateAccountException ex){
+        return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<String> handleBalance(InsufficientBalanceException ex){
+        return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String,String>> handleValidation(MethodArgumentNotValidException ex){
+
+        Map<String,String> errors=new HashMap<>();
+
+        ex.getBindingResult().getFieldErrors()
+                .forEach(error ->
+                        errors.put(error.getField(),error.getDefaultMessage()));
+
+        return new ResponseEntity<>(errors,HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleOther(Exception ex){
+        return new ResponseEntity<>("Internal Server Error",HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
