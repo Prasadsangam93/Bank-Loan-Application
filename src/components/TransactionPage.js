@@ -5,7 +5,7 @@ function TransactionPage(){
 
 const [accountNumber,setAccountNumber] = useState("");
 const [transactionType,setTransactionType] = useState("");
-const [amount,setAmount] = useState("");
+const [amount,setAmount] = useState(0);
 
 const [transactions,setTransactions] = useState([]);
 const [showList,setShowList] = useState(false);
@@ -15,7 +15,7 @@ const [savedTransaction,setSavedTransaction] = useState(null);
 const [errors,setErrors] = useState({});
 
 
-// ✅ VALIDATION
+// VALIDATION
 const validate = () => {
 
 let err = {};
@@ -31,10 +31,10 @@ err.transactionType = "Select Transaction Type";
 if(!amount){
 err.amount = "Amount Required";
 }
-else if(amount <= 0){
+else if(Number(amount) <= 0){
 err.amount = "Amount must be greater than 0";
 }
-else if(amount > 1000000){
+else if(Number(amount) > 1000000){
 err.amount = "Amount too large";
 }
 
@@ -43,7 +43,7 @@ return Object.keys(err).length === 0;
 };
 
 
-// ✅ CREATE TRANSACTION
+// CREATE TRANSACTION
 const createTransaction = (e)=>{
 
 e.preventDefault();
@@ -53,14 +53,13 @@ if(!validate()) return;
 TransactionService.createTransaction({
 accountNumber,
 transactionType,
-amount
+amount: Number(amount)
 })
 .then(res=>{
 setSavedTransaction(res.data);
 clearForm();
 })
 .catch(err=>{
-// 🔥 IMPORTANT → show backend error (like insufficient balance)
 setErrors({
 api: err.response?.data || "Transaction failed"
 });
@@ -69,7 +68,7 @@ api: err.response?.data || "Transaction failed"
 };
 
 
-// ✅ SHOW ALL
+// SHOW ALL
 const loadAllTransactions = () => {
 
 if(showList){
@@ -90,7 +89,7 @@ setErrors({api:"Error fetching transactions"});
 };
 
 
-// ✅ FETCH BY ACCOUNT
+// FETCH BY ACCOUNT
 const loadByAccount = () => {
 
 if(!accountNumber){
@@ -122,7 +121,7 @@ setErrors({api:"Error fetching account transactions"});
 const clearForm = () => {
 setAccountNumber("");
 setTransactionType("");
-setAmount("");
+setAmount(0);
 setErrors({});
 };
 
@@ -192,7 +191,7 @@ Save Transaction
 <td>{savedTransaction.accountNumber}</td>
 <td>{savedTransaction.transactionType}</td>
 <td>{savedTransaction.amount}</td>
-<td>{savedTransaction.transactionDate}</td>
+<td>{new Date(savedTransaction.transactionDate).toLocaleString()}</td>
 </tr>
 </tbody>
 </table>
@@ -229,7 +228,7 @@ Show By Account
 <td>{t.accountNumber}</td>
 <td>{t.transactionType}</td>
 <td>{t.amount}</td>
-<td>{t.transactionDate}</td>
+<td>{new Date(t.transactionDate).toLocaleString()}</td>
 </tr>
 ))}
 </tbody>

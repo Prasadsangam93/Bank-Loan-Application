@@ -13,7 +13,7 @@ return(
 
 <div style={{padding:"20px"}}>
 
-<h1> BANK-LOAN-APPLICATION</h1>
+<h1>BANK-LOAN-APPLICATION</h1>
 
 <nav>
 
