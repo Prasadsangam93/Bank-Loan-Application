@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body style="font-family:Arial;background:#f4f6f9;padding:20px">
+
+<div style="background:white;padding:20px;border-radius:5px">
+
+    <h2 style="color:#2c3e50">Smart Bank Transaction Alert</h2>
+
+    <p>Dear Customer,</p>
+
+    <p>
+        Your account <b>XXXX<span th:text="${lastFour}"></span></b>
+        has been
+        <b th:text="${type}"></b>
+        with ₹<span th:text="${amount}"></span>
+    </p>
+
+    <p>
+        Available Balance :
+        <b>₹<span th:text="${balance}"></span></b>
+    </p>
+
+    <br/>
+
+    <p>Thank you</p>
+    <p><b>Smart Bank</b></p>
+
+</div>
+
+</body>
+</html>

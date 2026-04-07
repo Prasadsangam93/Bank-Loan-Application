@@ -1,39 +1,50 @@
 package com.microservice.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
+
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 @RequiredArgsConstructor
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final SpringTemplateEngine templateEngine;
 
-    public void sendTransactionEmail(String email,
-                                     String accountNumber,
-                                     String type,
-                                     Double amount,
-                                     Double balance){
+    public void sendTransactionEmail(
+            String email,
+            String accountNumber,
+            String type,
+            Double amount,
+            Double balance) throws Exception {
 
         String lastFour =
                 accountNumber.substring(accountNumber.length()-4);
 
-        String message =
-                "Dear Customer,\n\n"+
-                        "Your account XXXX"+lastFour+
-                        " has been "+type+
-                        " with ₹"+amount+
-                        "\nAvailable Balance: ₹"+balance+
-                        "\n\nThank you\nSmart Bank";
+        Context context = new Context();
+        context.setVariable("lastFour", lastFour);
+        context.setVariable("type", type);
+        context.setVariable("amount", amount);
+        context.setVariable("balance", balance);
 
-        SimpleMailMessage mail=new SimpleMailMessage();
+        String html =
+                templateEngine.process("transaction-email", context);
 
-        mail.setTo(email);
-        mail.setSubject("SMART BANK TRANSACTION ALERT");
-        mail.setText(message);
+        MimeMessage message = mailSender.createMimeMessage();
 
-        mailSender.send(mail);
+        MimeMessageHelper helper =
+                new MimeMessageHelper(message, true);
+
+        helper.setTo(email);
+        helper.setSubject("SMART BANK TRANSACTION ALERT");
+        helper.setText(html, true);
+
+        mailSender.send(message);
     }
 }

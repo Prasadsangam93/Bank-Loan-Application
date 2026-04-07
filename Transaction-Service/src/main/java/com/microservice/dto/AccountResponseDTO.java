@@ -6,10 +6,8 @@ import lombok.Data;
 public class AccountResponseDTO {
 
     private Long id;
-
     private Long customerId;
-
     private String accountNumber;
-
     private Double balance;
+    private String email;
 }

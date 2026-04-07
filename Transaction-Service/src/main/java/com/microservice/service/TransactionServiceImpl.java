@@ -20,38 +20,43 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository repository;
     private final WebClient webClient;
+    private final EmailService emailService;
 
-    // CREATE TRANSACTION
     @Override
     public TransactionResponseDTO createTransaction(TransactionRequestDTO dto) {
 
-        log.info("Transaction started for account {}", dto.getAccountNumber());
+        log.info("Transaction started {}", dto.getAccountNumber());
 
-        // ✅ VALIDATION
-        if (dto.getAccountNumber() == null || dto.getAccountNumber().isBlank()) {
-            throw new RuntimeException("Account number required");
-        }
+        // 1. CALL ACCOUNT SERVICE (GET BALANCE + CUSTOMERID)
+        AccountResponseDTO account =
+                webClient.put()
+                        .uri("http://localhost:9092/api/accounts/transaction?accountNumber="
+                                + dto.getAccountNumber()
+                                + "&amount=" + dto.getAmount()
+                                + "&type=" + dto.getTransactionType())
+                        .retrieve()
+                        .bodyToMono(AccountResponseDTO.class)
+                        .block();
 
-        if (!dto.getTransactionType().equalsIgnoreCase("CREDIT") &&
-                !dto.getTransactionType().equalsIgnoreCase("DEBIT")) {
-            throw new RuntimeException("Invalid transaction type");
-        }
+        Double updatedBalance = account.getBalance();
+        Long customerId = account.getCustomerId();
 
-        // ✅ CALL ACCOUNT SERVICE (FIXED URL)
-        Double updatedBalance = webClient.put()
-                .uri("http://localhost:9092/api/accounts/transaction?accountNumber="
-                        + dto.getAccountNumber()
-                        + "&amount=" + dto.getAmount()
-                        + "&type=" + dto.getTransactionType())
-                .retrieve()
-                .bodyToMono(Double.class)
-                .block();
+        log.info("CustomerId {}", customerId);
 
-        log.info("Updated balance = {}", updatedBalance);
+        // 2. CALL CUSTOMER SERVICE (GET EMAIL)
+        CustomerResponseDTO customer =
+                webClient.get()
+                        .uri("http://localhost:9091/api/customers/" + customerId)
+                        .retrieve()
+                        .bodyToMono(CustomerResponseDTO.class)
+                        .block();
 
-        // ✅ SAVE TRANSACTION
+        String email = customer.getEmail();
+
+        log.info("Customer email {}", email);
+
+        // 3. SAVE TRANSACTION
         Transaction t = new Transaction();
-
         t.setAccountNumber(dto.getAccountNumber());
         t.setTransactionType(dto.getTransactionType());
         t.setAmount(dto.getAmount());
@@ -59,11 +64,21 @@ public class TransactionServiceImpl implements TransactionService {
 
         Transaction saved = repository.save(t);
 
-        log.info("Transaction saved with id {}", saved.getId());
+        // 4. SEND EMAIL
+        try {
+            emailService.sendTransactionEmail(
+                    email,
+                    dto.getAccountNumber(),
+                    dto.getTransactionType(),
+                    dto.getAmount(),
+                    updatedBalance
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         return map(saved);
     }
-
     // GET ALL
     @Override
     public List<TransactionResponseDTO> getAllTransactions() {

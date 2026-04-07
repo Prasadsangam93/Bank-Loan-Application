@@ -24,13 +24,9 @@ public class AccountServiceImpl implements AccountService {
     private final String CUSTOMER_URL =
             "http://localhost:9091/api/customers/exists/";
 
-    // CREATE ACCOUNT
     @Override
     public AccountResponseDTO createAccount(AccountRequestDTO dto){
 
-        log.info("Creating account for customer {}", dto.getCustomerId());
-
-        // Check customer exists
         Boolean exists = webClient.get()
                 .uri(CUSTOMER_URL + dto.getCustomerId())
                 .retrieve()
@@ -41,17 +37,11 @@ public class AccountServiceImpl implements AccountService {
             throw new RuntimeException("Customer not found");
         }
 
-        // Check account type already exists
-          List<Account> accounts =
-                repository.findByCustomerId(dto.getCustomerId());
+        if(repository.existsByCustomerIdAndAccountType(
+                dto.getCustomerId(),
+                dto.getAccountType())){
 
-        boolean alreadyExists = accounts.stream()
-                .anyMatch(a ->
-                        a.getAccountType()
-                                .equalsIgnoreCase(dto.getAccountType()));
-
-        if(alreadyExists){
-            throw new RuntimeException(
+            throw new DuplicateAccountException(
                     "Customer already has " +
                             dto.getAccountType() + " account");
         }
@@ -64,33 +54,24 @@ public class AccountServiceImpl implements AccountService {
         account.setAccountNumber(generateAccountNumber());
         account.setStatus("ACTIVE");
 
-        Account saved = repository.save(account);
-
-        log.info("Account created {}", saved.getAccountNumber());
-
-        return map(saved);
+        return map(repository.save(account));
     }
 
-    // GENERATE ACCOUNT NUMBER
     private String generateAccountNumber(){
-
-        long count = repository.count() + 1;
-
-        return String.format("ACC%06d", count);
+        long count = repository.count()+1;
+        return String.format("ACC%06d",count);
     }
 
-    // GET ACCOUNT
     @Override
     public AccountResponseDTO getAccountByNumber(String accountNumber){
 
         Account account = repository.findByAccountNumber(accountNumber)
                 .orElseThrow(() ->
-                        new RuntimeException("Account not found"));
+                        new AccountNotFoundException("Account not found"));
 
         return map(account);
     }
 
-    // CUSTOMER ACCOUNTS
     @Override
     public List<AccountResponseDTO> getCustomerAccounts(Long customerId){
 
@@ -100,7 +81,6 @@ public class AccountServiceImpl implements AccountService {
                 .toList();
     }
 
-    // ALL ACCOUNTS
     @Override
     public List<AccountResponseDTO> getAllAccounts(){
 
@@ -110,39 +90,36 @@ public class AccountServiceImpl implements AccountService {
                 .toList();
     }
 
-    // HOLD ACCOUNT
     @Override
     public void holdAccount(String accountNumber){
 
         Account account = repository.findByAccountNumber(accountNumber)
                 .orElseThrow(() ->
-                        new RuntimeException("Account not found"));
+                        new AccountNotFoundException("Account not found"));
 
         account.setStatus("HOLD");
 
         repository.save(account);
     }
 
-    // UNHOLD ACCOUNT
     @Override
     public void unholdAccount(String accountNumber){
 
         Account account = repository.findByAccountNumber(accountNumber)
                 .orElseThrow(() ->
-                        new RuntimeException("Account not found"));
+                        new AccountNotFoundException("Account not found"));
 
         account.setStatus("ACTIVE");
 
         repository.save(account);
     }
 
-    // BLOCK ACCOUNT
     @Override
     public void blockAccount(String accountNumber){
 
         Account account = repository.findByAccountNumber(accountNumber)
                 .orElseThrow(() ->
-                        new RuntimeException("Account not found"));
+                        new AccountNotFoundException("Account not found"));
 
         account.setStatus("BLOCK");
 
@@ -151,20 +128,22 @@ public class AccountServiceImpl implements AccountService {
 
     // CREDIT / DEBIT
     @Override
-    public Double processTransaction(String accountNumber,
-                                     Double amount,
-                                     String type){
+    public AccountResponseDTO processTransaction(
+            String accountNumber,
+            Double amount,
+            String type){
 
         Account account = repository.findByAccountNumber(accountNumber)
                 .orElseThrow(() ->
-                        new RuntimeException("Account not found"));
+                        new AccountNotFoundException("Account not found"));
 
         double balance = account.getBalance();
 
         if(type.equalsIgnoreCase("DEBIT")){
 
             if(balance < amount){
-                throw new RuntimeException("Insufficient balance");
+                throw new InsufficientBalanceException(
+                        "Insufficient balance");
             }
 
             balance -= amount;
@@ -178,12 +157,9 @@ public class AccountServiceImpl implements AccountService {
 
         repository.save(account);
 
-        log.info("Transaction successful. New balance {}", balance);
-
-        return balance;
+        return map(account);
     }
 
-    // MAP ENTITY TO DTO
     private AccountResponseDTO map(Account account){
 
         AccountResponseDTO dto = new AccountResponseDTO();
