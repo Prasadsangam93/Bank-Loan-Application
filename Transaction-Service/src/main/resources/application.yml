@@ -32,4 +32,4 @@ twilio:
   auth:
     token: xxxxxxxxxxxxxxxx
   phone:
-    number: ""
+    number: "xxxxxxxxxxxxxxxx"
