@@ -9,6 +9,7 @@ import java.util.*;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+
     @ExceptionHandler(CustomerNotFoundException.class)
     public ResponseEntity<String> handleNotFound(CustomerNotFoundException ex){
         return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);

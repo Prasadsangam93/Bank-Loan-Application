@@ -21,8 +21,9 @@ public class CustomerRequestDTO {
     private String email;
 
     @NotBlank(message = "Mobile is required")
-    @Pattern(regexp = "^[0-9]{10}$",
-            message = "Mobile must be exactly 10 digits")
+    @Pattern(
+            regexp = "^(\\+91)?[6-9][0-9]{9}$",
+            message = "Enter valid Indian mobile number"
+    )
     private String mobile;
-
 }

@@ -9,7 +9,6 @@ import com.microservice.dto.*;
 import com.microservice.service.TransactionService;
 
 import java.util.List;
-
 @RestController
 @RequestMapping("/api/transactions")
 @RequiredArgsConstructor
@@ -20,7 +19,8 @@ public class TransactionController {
 
     @PostMapping("/create")
     public ResponseEntity<TransactionResponseDTO> create(
-            @RequestBody TransactionRequestDTO dto) throws MessagingException {
+            @RequestBody TransactionRequestDTO dto)
+            throws MessagingException {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(service.createTransaction(dto));

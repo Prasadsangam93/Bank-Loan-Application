@@ -21,6 +21,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository repository;
     private final WebClient webClient;
     private final EmailService emailService;
+    private  final  SmsService smsService;
 
     @Override
     public TransactionResponseDTO createTransaction(TransactionRequestDTO dto) {
@@ -68,6 +69,13 @@ public class TransactionServiceImpl implements TransactionService {
         try {
             emailService.sendTransactionEmail(
                     email,
+                    dto.getAccountNumber(),
+                    dto.getTransactionType(),
+                    dto.getAmount(),
+                    updatedBalance
+            );
+            smsService.sendSms(
+                    customer.getMobile(),
                     dto.getAccountNumber(),
                     dto.getTransactionType(),
                     dto.getAmount(),
