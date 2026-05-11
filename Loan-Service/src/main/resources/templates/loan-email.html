@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body style="font-family:Arial;background:#f4f6f9;padding:20px">
+
+<div style="background:white;padding:20px;border-radius:5px">
+
+    <h2 style="color:#2c3e50">Smart Bank Loan Service</h2>
+
+    <p>Dear Customer,</p>
+
+    <p>
+        Your account
+        <b>XXXX<span th:text="${lastFour}">0000</span></b>
+        has an update:
+    </p>
+
+    <!-- TYPE -->
+    <h3 style="color:#2980b9;" th:text="${type}">STATUS</h3>
+
+    <!-- APPROVED -->
+    <div th:if="${type == 'LOAN APPROVED'}">
+        <p>Your loan has been <b style="color:green;">APPROVED</b>.</p>
+        <p>Loan Amount: ₹<b th:text="${amount}">0</b></p>
+        <p>Total Payable: ₹<b th:text="${balance}">0</b></p>
+    </div>
+
+    <!-- REJECTED -->
+    <div th:if="${type == 'LOAN REJECTED'}">
+        <p>Your loan request has been <b style="color:red;">REJECTED</b>.</p>
+        <p>Please contact bank for more details.</p>
+    </div>
+
+    <!-- CLOSED -->
+    <div th:if="${type == 'LOAN CLOSED'}">
+        <p>Your loan has been <b style="color:blue;">CLOSED</b>.</p>
+        <p>Thank you for completing your payments.</p>
+    </div>
+
+    <!-- EMI REMINDER -->
+    <div th:if="${type == 'EMI REMINDER'}">
+        <p>This is a reminder for your EMI payment.</p>
+        <p>EMI Amount: ₹<b th:text="${amount}">0</b></p>
+        <p>Total Outstanding: ₹<b th:text="${balance}">0</b></p>
+    </div>
+
+    <hr/>
+
+    <p style="font-size:12px;color:gray;">
+        This is an automated message. Please do not reply.
+    </p>
+
+    <p>Thank you</p>
+    <p><b>Smart Bank</b></p>
+
+</div>
+
+</body>
+</html>
